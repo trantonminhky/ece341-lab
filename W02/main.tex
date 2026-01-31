@@ -1,0 +1,295 @@
+\documentclass{exam}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[main=english,vietnamese]{babel}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage{tcolorbox}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{centernot}
+\usepackage{cases}
+\usepackage{physics}
+\usepackage[shortlabels]{enumitem}
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage{sidecap}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{kvmap}
+
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+
+\definecolor{borderblue}{HTML}{33c2ff}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\newcommand{\paren}[1]{\left(#1\right)}
+\newcommand{\curly}[1]{\left\{#1\right\}}
+
+\allowdisplaybreaks
+
+\makeatletter
+\long\def\paragraph{%
+  \@startsection{paragraph}{4}%
+  {\z@}{2ex \@plus 1ex \@minus .2ex}{-1em}%
+  {\normalfont\normalsize\bfseries}%
+}
+\makeatother
+
+\makeatletter
+\def\@xequals@fill{\arrowfill@\Relbar\Relbar\Relbar}
+\newcommand*\xequals[2][]{\DOTSB\ext@arrow0055\@xequals@fill{#1}{#2}}
+\makeatother
+
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+\NewTColorBox{algorithm}{m}{
+  standard jigsaw,
+  sharp corners,
+  boxrule=0.4pt,
+  coltitle=black,
+  colframe=black,
+  opacityback=0,
+  opacitybacktitle=0,
+  fonttitle=\normalfont\bfseries\upshape,
+  fontupper=\normalfont,
+  title={Algorithm #1},
+  after title={.},
+  attach title to upper={\ },
+}
+
+\NewTColorBox{question}{m}{
+  standard jigsaw,
+  sharp corners,
+  boxrule=0.4pt,
+  coltitle=black,
+  colframe=black,
+  opacityback=0,
+  opacitybacktitle=0,
+  fonttitle=\normalfont\bfseries\upshape,
+  fontupper=\normalfont,
+  title={Question #1},
+  attach title to upper={\ },
+}
+
+\newcommand{\lnand}{\uparrow}
+\newcommand{\lnor}{\downarrow}
+
+\title{ECE341 - Homework 2}
+\author{Ton-Minh-Ky Tran}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Investigate different types of flip-flops}
+\section{4-bit asynchronous counter to 15 using D flip-flops}
+Because this counter's maximum value is 4 bit, we use 4 D flip-flops for each $Q$. One can observe that if $Q_i$ flips, then $Q_{i + 1}$ flips as well as we increment. Since the $Q_0$ bit always toggles per clock cycle, we hook $\overline{Q_0}$ to $D_0$. Then for each other flip-flop, we do the same and also hook the previous flip-flop's $Q$ value to the clock input. That way, the flip-flops create a rippling effect and behave similarly to a binary number incrementing. We also connect the $Q$'s to a oscilloscope and see that the period of the waveform of each $Q$ is twice as large as that of the previous $Q$ (highlighting the usage of flip-flops to reduce frequency). An implementation is shown in \verb|24125102_2.circ|.
+
+\section{Truncated asynchronous counter to 12 using JK flip-flops}
+In principle, this is similar to how JK flip-flops counter works shown in the diagram in problem 2. However, we also need to implement the logic such that when the counter hits 13, all flip-flops' clear bit must be enabled, effectively clamping the counter maximum value to 12. Observe that the binary representation of $13$ is \verb|1101|, thus we need to check whether $Q_0$, $Q_2$, and $Q_3$ are set (we need not check for $Q_1$, since the counter will reach \verb|1101| before \verb|1111|). A 3-input AND gate thus suffices. An implementation is shown in \verb|24125102_3.circ|.
+
+\section{Synchronous counter using D flip-flops}
+We first create a transition table to determine the $D$ input for each flip-flop.
+\begin{center}
+	\begin{tabular}{|c|c|c||c|c|c||c|c|c|}
+		\hline
+		\multicolumn{3}{|c||}{Present state} & \multicolumn{3}{c||}{Next state} & \multicolumn{3}{c|}{Input} \\
+		\hline
+		$Q_2$ & $Q_1$ & $Q_0$ & $Q_2$ & $Q_1$ & $Q_0$ & $D_2$ & $D_1$ & $D_0$ \\
+		\hline
+		\hline
+		0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\
+		\hline
+		0 & 1 & 0 & 0 & 1 & 1 & 0 & 1 & 1 \\
+		\hline
+		0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		\hline
+		1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+		\hline
+	\end{tabular}
+\end{center}
+Using this transition table, we are able to make Karnaugh maps for each $D$.
+
+\begin{center}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{D_2}$:
+		
+		\begin{kvmap}
+			\kvlist{2}{4}{0, X, 0, 1, X, 0, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{1}{0}{1}{1}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{D_1}$:
+	
+		\begin{kvmap}
+			\kvlist{2}{4}{1, X, 1, 1, X, 0, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{0}{1}{1}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{D_0}$:
+	
+		\begin{kvmap}
+			\kvlist{2}{4}{0, X, 1, 1, X, 0, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{1}{1}{1}
+		\end{kvmap}
+	\end{minipage}
+\end{center}
+
+We thus obtain the following:
+\[
+	D_2 = \overline{Q_2}Q_0, \quad D_1 = \overline{Q_2}, \quad D_0 = \overline{Q_2}Q_1.
+\]
+
+Now that we know the required input for each flip-flop, implementing the final circuit is trivial. An implementataion is shown in \verb|24125102_4.circ|.
+
+\section{Up down synchronous counter using JK flip-flops}
+We first consider the case when $C = 1$, making it an up counter. Instead of creating a truth table based on the next value's truth value, we instead create one based on whether the next value is different from the current value; i.e. a toggle. The transition table is thus as follows:
+\begin{center}
+	\begin{tabular}{|c|c|c||c|c|c||c|c|c|}
+		\hline
+		\multicolumn{3}{|c||}{Present state} & \multicolumn{3}{c||}{Next state} & \multicolumn{3}{c|}{Input} \\
+		\hline
+		$Q_2$ & $Q_1$ & $Q_0$ & $Q_2$ & $Q_1$ & $Q_0$ & $JK_2$ & $JK_1$ & $JK_0$ \\
+		\hline
+		\hline
+		0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\
+		\hline
+		0 & 1 & 0 & 0 & 1 & 1 & 0 & 0 & 1 \\
+		\hline
+		0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 \\
+		\hline
+		1 & 1 & 1 & 0 & 0 & 0 & 1 & 1 & 1 \\
+		\hline
+	\end{tabular}
+\end{center}
+
+Using this transition table, we are able to make Karnaugh maps for each $JK$.
+\begin{center}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_2}$:
+		
+		\begin{kvmap}
+			\kvlist{2}{4}{0, X, 0, 1, X, 1, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{1}{0}{1}{3}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_1}$:
+	
+		\begin{kvmap}
+			\kvlist{2}{4}{1, X, 0, 0, X, 1, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{0}{1}{0}
+			\bundle[color=blue]{0}{2}{1}{2}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_0}$:
+	
+		\begin{kvmap}
+			\kvlist{2}{4}{0, X, 1, 0, X, 1, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{1}{0}{2}
+			\bundle[color=blue, reducespace=-1pt]{0}{2}{1}{2}
+		\end{kvmap}
+	\end{minipage}
+\end{center}
+
+Thus for $C = 1$, we obtain the following:
+\[
+	JK_2 = Q_0, \quad JK_1 = Q_2 \odot Q_1, \quad JK_0 = Q_1(Q_2 + \overline{Q_0}).
+\]
+
+We do the same for $C = 0$. The transition table is thus as follows:
+\begin{center}
+	\begin{tabular}{|c|c|c||c|c|c||c|c|c|}
+		\hline
+		\multicolumn{3}{|c||}{Present state} & \multicolumn{3}{c||}{Next state} & \multicolumn{3}{c|}{Input} \\
+		\hline
+		$Q_2$ & $Q_1$ & $Q_0$ & $Q_2$ & $Q_1$ & $Q_0$ & $JK_2$ & $JK_1$ & $JK_0$ \\
+		\hline
+		\hline
+		0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		\hline
+		1 & 1 & 1 & 0 & 1 & 1 & 1 & 0 & 0 \\
+		\hline
+		0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 1 \\
+		\hline
+		0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+		\hline
+	\end{tabular}
+\end{center}
+
+Using this transition table, we are able to make Karnaugh maps for each $JK$.
+\begin{center}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_2}$:
+
+		\begin{kvmap}
+			\kvlist{2}{4}{1, X, 0, 0, X, 1, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{0}{1}{0}
+			\bundle[color=blue]{0}{2}{1}{2}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_1}$:
+	
+		\begin{kvmap}
+			\kvlist{2}{4}{1, X, 1, 0, X, 0, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{0}{0}{3}
+		\end{kvmap}
+	\end{minipage}
+	\begin{minipage}{0.30\textwidth}
+		$\mathbf{JK_0}$:
+
+		\begin{kvmap}
+			\kvlist{2}{4}{1, X, 0, 1, X, 0, X, X}{Q_0, Q_2, Q_1}
+			\bundle[color=red]{0}{0}{1}{0}
+			\bundle[color=blue, reducespace=-1pt]{1}{1}{1}{0}
+		\end{kvmap}
+	\end{minipage}
+\end{center}
+Thus for $C = 0$, we obtain the following:
+\[
+	JK_2 = Q_2 \odot Q_1, \quad JK_1 = \overline{Q_0}, \quad JK_0 = \overline{Q_2}(\overline{Q_1} + Q_0).
+\]
+In order to connect the two circuits for each $C$, we hook each $JK$ and the control bit to an AND gate, totalling to six AND gates. Then we connect the respective $Q$'s for each circuit to an OR gate and connect it to the suitable JK flip-flop. An implementation is shown in \verb|24125102_5.circ|.
+
+\section{Digital clock using counter}
+The implementation includes three counters for the hour, minute, and second counts, with a maximum values set as 23, 59, and 59, respectively. After a brief reading on the counter's input and output description, implementation is trivial. To append the time setting functionality, we utilize the sliders for each value and wire each of them to the counters. An implementation is shown in \verb|24125102_6.circ|.
+
+\end{document}
